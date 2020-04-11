@@ -148,7 +148,7 @@ Fasttracker.prototype.clearsong = function()
     this.instrument[i].name="";
     this.instrument[i].samples=new Array();
   }
-  
+
   this.chvu=new Float32Array(2);
 }
 
@@ -298,7 +298,7 @@ Fasttracker.prototype.parse = function(buffer)
   while(i<this.patterns) {
     this.patternlen[i]=le_word(buffer, offset+5);
     this.pattern[i]=new Uint8Array(this.channels*this.patternlen[i]*5);
-    
+
     // initialize pattern to defaults prior to unpacking
     for(k=0;k<(this.patternlen[i]*this.channels);k++) {
       this.pattern[i][k*5 + 0]=0; // note
@@ -306,8 +306,8 @@ Fasttracker.prototype.parse = function(buffer)
       this.pattern[i][k*5 + 2]=0; // volume
       this.pattern[i][k*5 + 3]=0; // command
       this.pattern[i][k*5 + 4]=0; // parameter
-    }    
-    
+    }
+
     datalen=le_word(buffer, offset+7);
     offset+=le_dword(buffer, offset); // jump over header
     j=0; k=0;
@@ -330,8 +330,8 @@ Fasttracker.prototype.parse = function(buffer)
       }
       k+=5;
     }
-      
-    for(k=0;k<(this.patternlen[i]*this.channels*5);k+=5) {      
+
+    for(k=0;k<(this.patternlen[i]*this.channels*5);k+=5) {
       // remap note to st3-style, 255=no note, 254=note off
       if (this.pattern[i][k+0]>=97) {
         this.pattern[i][k+0]=254;
@@ -349,7 +349,7 @@ Fasttracker.prototype.parse = function(buffer)
       else if (this.pattern[i][k+2]>=0x10 && this.pattern[i][k+2]<=0x50) { this.pattern[i][k+2]-=0x10; }
       else if (this.pattern[i][k+2]>=0xf0) this.pattern[i][k+2]-=0xa0;
     }
-    
+
     // unpack next pattern
     offset+=j;
     i++;
@@ -585,14 +585,14 @@ Fasttracker.prototype.advance = function(mod) {
       }
     }
   }
-  
+
   // step to new pattern?
   if (mod.row>=mod.patternlen[mod.patterntable[mod.position]]) {
     mod.position++;
     mod.row=0;
     mod.flags|=4;
   }
-  
+
   // end of song?
   if (mod.position>=mod.songlen) {
     if (mod.repeat) {
@@ -621,7 +621,7 @@ Fasttracker.prototype.process_note = function(mod, p, ch) {
       mod.channel[ch].sampleindex=s;
       mod.channel[ch].volume=mod.instrument[i-1].sample[s].volume;
       mod.channel[ch].playdir=1; // fixes crash in respirator.xm pos 0x12
-      
+
       // set pan from sample
       mod.pan[ch]=mod.instrument[i-1].sample[s].panning/255.0;
     }
@@ -671,7 +671,7 @@ Fasttracker.prototype.process_note = function(mod, p, ch) {
         mod.channel[ch].volenvpos=0;
         mod.channel[ch].panenvpos=0;
         mod.channel[ch].trigramp=0.0;
-        mod.channel[ch].trigrampfrom=mod.channel[ch].currentsample;        
+        mod.channel[ch].trigrampfrom=mod.channel[ch].currentsample;
       }
       if ((mod.channel[ch].command != 0x03) && (mod.channel[ch].command != 0x05)) {
         mod.channel[ch].note=n;
@@ -701,12 +701,12 @@ Fasttracker.prototype.process_note = function(mod, p, ch) {
 // advance player and all channels by a tick
 Fasttracker.prototype.process_tick = function(mod) {
 
-  // advance global player state by a tick  
+  // advance global player state by a tick
   mod.advance(mod);
 
-  // advance all channels by a tick  
+  // advance all channels by a tick
   for(var ch=0;ch<mod.channels;ch++) {
-  
+
     // calculate playback position
     var p=mod.patterntable[mod.position];
     var pp=mod.row*5*mod.channels + ch*5;
@@ -803,7 +803,7 @@ Fasttracker.prototype.process_tick = function(mod) {
 
       if (mod.channel[ch].panenvpos>324) mod.channel[ch].panenvpos=324;
     }
-    
+
     // calc final volume for channel
     mod.channel[ch].finalvolume=mod.channel[ch].voicevolume * mod.instrument[i].volenv[mod.channel[ch].volenvpos] * mod.channel[ch].fadeoutpos/65536.0;
 
@@ -815,7 +815,7 @@ Fasttracker.prototype.process_tick = function(mod) {
       mod.channel[ch].volrampfrom=mod.channel[ch].oldfinalvolume;
       mod.channel[ch].volramp=0.0;
     }
-    
+
     // clear channel flags
     mod.channel[ch].flags=0;
   }
@@ -845,7 +845,7 @@ Fasttracker.prototype.mix = function(mod, bufs, buflen) {
   {
     outp[0]=0.0;
     outp[1]=0.0;
-    
+
     // if STT has run out, step player forward by tick
     if (mod.stt<=0) mod.process_tick(mod);
 
@@ -855,7 +855,7 @@ Fasttracker.prototype.mix = function(mod, bufs, buflen) {
       var fl=0.0, fr=0.0, fs=0.0;
       var i=mod.channel[ch].instrument;
       var si=mod.channel[ch].sampleindex;
-      
+
       // add channel output to left/right master outputs
       if (mod.channel[ch].noteon ||
           ((mod.instrument[i].voltype&1) && !mod.channel[ch].noteon && mod.channel[ch].fadeoutpos) ||
@@ -1378,3 +1378,5 @@ Fasttracker.prototype.effect_t1_ee=function(mod, ch) { // ee
 }
 Fasttracker.prototype.effect_t1_ef=function(mod, ch) { // ef
 }
+
+module.exports = Fasttracker

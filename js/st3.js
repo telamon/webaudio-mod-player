@@ -176,7 +176,7 @@ Screamtracker.prototype.initialize = function()
   this.endofsong=false;
 
   this.channel=new Array();
-  for(i=0;i<this.channels;i++) {
+  for(let i=0;i<this.channels;i++) {
     this.channel[i]=new Object();
     this.channel[i].sample=0;
     this.channel[i].note=24;
@@ -649,7 +649,7 @@ Screamtracker.prototype.mix = function(mod, bufs, buflen) {
     }
 
     // done - store to output buffer
-    t=mod.volume/64.0;
+    const t=mod.volume/64.0;
     bufs[0][s]=outp[0]*t;
     bufs[1][s]=outp[1]*t;
     mod.stt--;
@@ -994,3 +994,4 @@ Screamtracker.prototype.effect_t1_se=function(mod, ch) { // pattern delay
 }
 Screamtracker.prototype.effect_t1_sf=function(mod, ch) { // funkrepeat (not implemented)
 }
+module.exports = Screamtracker

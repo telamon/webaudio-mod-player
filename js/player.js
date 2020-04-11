@@ -158,7 +158,7 @@ Modplayer.prototype.play = function()
     this.playing=true;
 
     this.chvu=new Float32Array(this.player.channels);
-    for(i=0;i<this.player.channels;i++) this.chvu[i]=0.0;
+    for(let i=0;i<this.player.channels;i++) this.chvu[i]=0.0;
 
     this.onPlay();
 
@@ -442,10 +442,10 @@ Modplayer.prototype.mix = function(ape) {
     for(var s=0;s<buflen;s++) {
       outp[0]=bufs[0][s];
       outp[1]=bufs[1][s];
-    
+
       // a more headphone-friendly stereo separation
       if (mod.separation) {
-        t=outp[0];
+        const t=outp[0];
         if (mod.separation==2) { // mono
           outp[0]=outp[0]*0.5 + outp[1]*0.5;
           outp[1]=outp[1]*0.5 + t*0.5;
@@ -458,7 +458,7 @@ Modplayer.prototype.mix = function(ape) {
       // scale down and soft clip
       outp[0]/=mod.mixval; outp[0]=0.5*(Math.abs(outp[0]+0.975)-Math.abs(outp[0]-0.975));
       outp[1]/=mod.mixval; outp[1]=0.5*(Math.abs(outp[1]+0.975)-Math.abs(outp[1]-0.975));
-      
+
       bufs[0][s]=outp[0];
       bufs[1][s]=outp[1];
     }
@@ -477,13 +477,14 @@ Modplayer.prototype.mix = function(ape) {
 
     if (mod.delayfirst>0) mod.delayfirst--;
     mod.delayload=0;
-    
+
     // update this.chvu from player channel vu
     for(var i=0;i<mod.player.channels;i++) {
-      mod.chvu[i]=mod.chvu[i]*0.25 + mod.player.chvu[i]*0.75;    
+      mod.chvu[i]=mod.chvu[i]*0.25 + mod.player.chvu[i]*0.75;
       mod.player.chvu[i]=0.0;
     }
   }
 
 
 }
+module.exports = Modplayer

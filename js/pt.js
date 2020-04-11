@@ -760,3 +760,4 @@ Protracker.prototype.effect_t1_ee=function(mod, ch) { // ee
 }
 Protracker.prototype.effect_t1_ef=function(mod, ch) { // ef
 }
+module.exports = Protracker
