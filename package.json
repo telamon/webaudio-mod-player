@@ -1,0 +1,17 @@
+{
+  "name": "webmod-js",
+  "version": "1.0.0",
+  "description": "webaudio mod player",
+  "main": "index.js",
+  "type": "module",
+  "browser": true,
+  "scripts": {
+    "lint": "standard"
+  },
+  "repository": "https://github.com/telamon/webaudio-mod-player.git",
+  "author": "Tony Ivanov <telamohn@pm.me>",
+  "license": "MIT",
+  "devDependencies": {
+    "standard": "^14.3.3"
+  }
+}
