@@ -11,30 +11,34 @@ const READY = 0
 const EMPTY = 1
 const PLAY = 2
 const PAUSED = 3
-
+const STOPPED = 4
 const AudioContext = window.AudioContext || window.webkitAudioContext
 
-class PlayerStore {
+class ModPlayer {
+  static normBuffer (input) { return Buffer.from(input) }
   constructor (observer) {
-    this._emit = observer || console.info
+    this._emit = (...a) => observer && observer(...a)
     this.player = null
     this.context = null
     this.mixerNode = null
     this.amiga500 = false
     this.state = EMPTY
     this._emit('state', EMPTY)
+    this._forceLoop = true
   }
 
   loadBuffer (type, buffer) {
-    buffer = Buffer.from(buffer)
+    buffer = ModPlayer.normBuffer(buffer)
     switch (type) {
       case 's3m':
       case 'audio/x-s3m':
         this.player = new Screamtracker()
         break
+      case 'audio/x-mod':
       case 'mod':
         this.player = new Protracker()
         break
+      case 'audio/x-xm':
       case 'xm':
         this.player = new Fasttracker()
         break
@@ -47,12 +51,6 @@ class PlayerStore {
       return
     }
     this._adjustLowpass()
-
-    /*
-    this.mixval = this.player.mixval; // usually 8.0, though
-    if (this.autostart) this.play();
-    */
-
     this._chvu = new Float32Array(this.player.channels)
     this.state = READY
     this._emit('state', READY)
@@ -65,15 +63,35 @@ class PlayerStore {
   get patterns () { return this.player && this.player.patterns }
   get sampleNames () {
     return this.player &&
-      (this.player instanceof Screamtracker ? this.player.sample : this.player.instrument)
-        .map(i => i.name || '\n')
+      (this.player.instrument || this.player.sample || [{ name: '<Failed to load names>' }])
+        .map(i => i.name || '')
+  }
+
+  get desc () {
+    return (this.sampleNames || []).join('\n').replace(/\n+/g, '\n')
   }
 
   pause () {
+    if (this.state !== PLAY) return
     this.state = PAUSED
     this.player.paused = true
     this.player.playing = false
     this._emit('state', this.state)
+  }
+
+  stop () {
+    this.player.paused = false
+    this.player.playing = false
+    this.player.endofsong = true
+    this.state = STOPPED
+    this._emit('state', this.state)
+  }
+
+  restart () {
+    this.player.position = 0
+    this.player.paused = false
+    this.player.playing = true
+    this.player.endofsong = false
   }
 
   play () {
@@ -84,6 +102,7 @@ class PlayerStore {
       case PAUSED:
         this.player.paused = false
         this.player.playing = true
+        this._emit('state', this.state)
       default: // eslint-disable-line no-fallthrough
         return
     }
@@ -167,18 +186,18 @@ class PlayerStore {
     for (let i = 0; i < this.player.channels; i++) {
       // Smooth vu meters by 25%
       this._chvu[i] = this._chvu[i] * 0.25 + this.player.chvu[i] * 0.75
-      this.player.chvu[i] = 0.0 // why??
+      if (this.player.chvu) this.player.chvu[i] = 0.0 // why??
     }
-
-    this.emit('tick', {
-      row: this.player.row,
-      position: this.player.position,
-      speed: this.player.speed,
-      bpm: this.player.bpm,
-      endofsong: this.player.endofsong,
-      chvu: this._chvu
-    })
-    /* TODO: This messed up the sound, disabled for now.
+    if (this.state === PLAY) {
+      this._emit('tick', {
+        row: this.player.row,
+        position: this.player.position,
+        speed: this.player.speed,
+        bpm: this.player.bpm,
+        endofsong: this.player.endofsong,
+        chvu: this._chvu
+      })
+    }
 
     // apply stereo separation and soft clipping
     const outp = new Float32Array(2)
@@ -186,10 +205,11 @@ class PlayerStore {
       outp[0] = bufs[0][s]
       outp[1] = bufs[1][s]
 
+      const separation = 1
       // a more headphone-friendly stereo separation
-      if (this.separation) {
+      if (separation) {
         const t = outp[0]
-        if (this.separation === 2) { // mono
+        if (separation === 2) { // mono
           outp[0] = outp[0] * 0.5 + outp[1] * 0.5
           outp[1] = outp[1] * 0.5 + t * 0.5
         } else { // narrow stereo
@@ -197,16 +217,16 @@ class PlayerStore {
           outp[1] = outp[1] * 0.65 + t * 0.35
         }
       }
-
+      const mixval = 2.0
       // scale down and soft clip
-      outp[0] /= this.mixval; outp[0] = 0.5 * (Math.abs(outp[0] + 0.975) - Math.abs(outp[0] - 0.975))
-      outp[1] /= this.mixval; outp[1] = 0.5 * (Math.abs(outp[1] + 0.975) - Math.abs(outp[1] - 0.975))
+      outp[0] /= mixval; outp[0] = 0.5 * (Math.abs(outp[0] + 0.975) - Math.abs(outp[0] - 0.975))
+      outp[1] /= mixval; outp[1] = 0.5 * (Math.abs(outp[1] + 0.975) - Math.abs(outp[1] - 0.975))
 
       bufs[0][s] = outp[0]
       bufs[1][s] = outp[1]
-    } */
+    }
 
-    if (this.player.endofsong && this.player.playing) this.stop()
+    if (this.player.endofsong && this.player.playing) this._forceLoop ? this.restart() : this.stop()
   }
 }
-export default PlayerStore
+export default ModPlayer
