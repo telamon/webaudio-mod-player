@@ -9,7 +9,10 @@
     "lint": "standard"
   },
   "repository": "https://github.com/telamon/webaudio-mod-player.git",
-  "author": "Tony Ivanov <telamohn@pm.me>",
+  "author":"Jani Halme",
+  "contributors": [
+   "Tony Ivanov <telamohn@pm.me>"
+  ],
   "license": "MIT",
   "devDependencies": {
     "standard": "^14.3.3"

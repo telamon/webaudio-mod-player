@@ -1,6 +1,22 @@
 webaudio-mod-player
 ===================
 
+This is a fork, please visit [jhalme/webaudio-mod-player](https://github.com/jhalme/webaudio-mod-player) for original source code.
+
+The purpose of this fork was to re-package this awesome player
+as an ES6 module.
+
+## Usage:
+
+```js
+require { Modplayer } from 'webmod-js'
+
+const player = new Modplayer()
+player.loadBuffer(Uint8Array||Buffer)
+player.play()
+```
+
+# original readme
 ![Screenshot](https://raw.githubusercontent.com/jhalme/webaudio-mod-player/master/screenshot.jpg)
 
 This is a MOD/S3M/XM module player implemented in Javascript using the Web Audio API and runs fully within the browser. It
@@ -21,7 +37,7 @@ applying a low pass filter.
 
 None of the player classes fully implement all the features and effects in each file format, but all the major ones should
 be implemented. In addition, there most certainly will be some playback bugs in each player class - let me know if you run
-into some bad ones. 
+into some bad ones.
 
 You can test the player here:
 
