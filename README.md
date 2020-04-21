@@ -4,7 +4,7 @@ webaudio-mod-player
 This is a fork, please visit [jhalme/webaudio-mod-player](https://github.com/jhalme/webaudio-mod-player) for original source code.
 
 The purpose of this fork was to re-package this awesome player
-as an ES6 module.
+as an ES6 module that i could use for this project: https://github.com/telamon/juke
 
 ## Usage:
 
